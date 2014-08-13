@@ -55,6 +55,7 @@ VertexDataType query_dst;
 struct ReachabilityProgram : public GraphChiProgram<VertexDataType, EdgeDataType> {
  
     bool terminate;
+    bool converged;
 
     /**
      *  Vertex update function.
@@ -69,6 +70,7 @@ struct ReachabilityProgram : public GraphChiProgram<VertexDataType, EdgeDataType
 
             gcontext.scheduler->remove_tasks(vertex.id(), vertex.id());
             gcontext.scheduler->add_task(query_src);
+            converged = false;
         } else {
             /* For source vertex, propagate its id to neighbors */ 
             if(vertex.id() == query_src) {
@@ -77,6 +79,7 @@ struct ReachabilityProgram : public GraphChiProgram<VertexDataType, EdgeDataType
                     vid_t nlabel = vertex.outedge(i)->vertex_id();
                     gcontext.scheduler->add_task(nlabel);
                 }
+                converged = false;
                 gcontext.scheduler->remove_tasks(vertex.id(), vertex.id());
             }
             /* If it reaches the destination */
@@ -102,9 +105,11 @@ struct ReachabilityProgram : public GraphChiProgram<VertexDataType, EdgeDataType
                             vid_t nlabel = vertex.outedge(i)->vertex_id();
                             gcontext.scheduler->add_task(nlabel);
                         }
+                        converged = false;
                         break;
                     }
                 }
+                gcontext.scheduler->remove_tasks(vertex.id(), vertex.id());
             }
             
         }
@@ -115,6 +120,7 @@ struct ReachabilityProgram : public GraphChiProgram<VertexDataType, EdgeDataType
      */
     void before_iteration(int iteration, graphchi_context &gcontext) {
         terminate = false;
+        converged = true;
     }
     
     /**
@@ -123,6 +129,10 @@ struct ReachabilityProgram : public GraphChiProgram<VertexDataType, EdgeDataType
     void after_iteration(int iteration, graphchi_context &gcontext) {
         if (terminate) {
             std::cout << "Connected" << std::endl;
+            gcontext.set_last_iteration(iteration);
+        }
+        else if (converged) {
+            std::cout << "Converged, not Connected" << std::endl;
             gcontext.set_last_iteration(iteration);
         }
     }

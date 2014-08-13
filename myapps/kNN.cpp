@@ -30,23 +30,49 @@
 
 
 #include <string>
-
+#include <set>
+#include <vector>
 #include "graphchi_basic_includes.hpp"
 
 using namespace graphchi;
 
+struct edge_value {
+    float p; // probability of existence
+    float w; // weight
+    int i; // index of iteration
+    float s; // shortest path from source to endpoint, including the weight of current edge
+};
+
+struct vertex_value {
+    float sum; // sum of all shortest path length
+    float count; // counter of shortest path reached
+};
+
+struct vertex_sp {
+    vid_t id;
+    float sp;
+};
+
+struct compare {
+    bool operator () (const vertex_sp& v1, const vertex_sp& v2) {
+        return v1.sp > v2.sp;
+    }
+};
 /**
   * Type definitions. Remember to create suitable graph shards using the
   * Sharder-program. 
   */
-typedef my_vertex_type VertexDataType;
-typedef my_edge_type EdgeDataType;
+typedef vertex_value VertexDataType;
+typedef edge_value EdgeDataType;
+typedef std::vector<std::set<vertex_sp, compare> > sample_queues;
+
+vid_t src;
 
 /**
   * GraphChi programs need to subclass GraphChiProgram<vertex-type, edge-type> 
   * class. The main logic is usually in the update function.
   */
-struct MyGraphChiProgram : public GraphChiProgram<VertexDataType, EdgeDataType> {
+struct kNN : public GraphChiProgram<VertexDataType, EdgeDataType> {
     
  
     /**
@@ -54,7 +80,7 @@ struct MyGraphChiProgram : public GraphChiProgram<VertexDataType, EdgeDataType> 
      */
     void update(graphchi_vertex<VertexDataType, EdgeDataType> &vertex, graphchi_context &gcontext) {
 
-        if (ginfo.iteration == 0) {
+        if (gcontext.iteration == 0) {
             /* On first iteration, initialize vertex (and its edges). This is usually required, because
                on each run, GraphChi will modify the data files. To start from scratch, it is easiest
                do initialize the program in code. Alternatively, you can keep a copy of initial data files. */
@@ -129,7 +155,7 @@ int main(int argc, const char ** argv) {
                                                             get_option_string("nshards", "auto"));
     
     /* Run */
-    MyGraphChiProgram program;
+    kNN program;
     graphchi_engine<VertexDataType, EdgeDataType> engine(filename, nshards, scheduler, m); 
     engine.run(program, niters);
     
