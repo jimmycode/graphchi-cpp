@@ -1,6 +1,6 @@
 INCFLAGS = -I/usr/local/include/ -I./src/
 
-CPP = g++
+CPP = /usr/local/bin/g++
 CPPFLAGS = -g -O3 $(INCFLAGS)  -fopenmp -Wall -Wno-strict-aliasing 
 LINKERFLAGS = -lz
 DEBUGFLAGS = -g -ggdb $(INCFLAGS)
@@ -31,9 +31,9 @@ example_apps/% : example_apps/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
 	$(CPP) $(CPPFLAGS) -Iexample_apps/ $@.cpp -o bin/$@ $(LINKERFLAGS) 
 
-reachability: myapps/reachability.cpp $(HEADERS)
-	@mkdir -p bin/myapps
-	$(CPP) $(CPPFLAGS) myapps/reachability.cpp -o bin/myapps/reachability $(LINKERFLAGS) 
+myapps/% : myapps/%.cpp $(HEADERS)
+	@mkdir -p bin/$(@D)
+	$(CPP) $(CPPFLAGS) -Imyapps/ $@.cpp -o bin/$@ $(LINKERFLAGS)
 
 tests/%: src/tests/%.cpp $(HEADERS)
 	@mkdir -p bin/$(@D)
