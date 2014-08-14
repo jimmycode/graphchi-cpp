@@ -58,13 +58,15 @@ struct compare {
         return v1.sp > v2.sp;
     }
 };
+
 /**
   * Type definitions. Remember to create suitable graph shards using the
   * Sharder-program. 
   */
+
 typedef vertex_value VertexDataType;
 typedef edge_value EdgeDataType;
-typedef std::vector<std::set<vertex_sp, compare> > sample_queues;
+typedef std::vector< std::set<vertex_sp, compare> > sample_queues;
 
 vid_t src;
 
@@ -73,7 +75,6 @@ vid_t src;
   * class. The main logic is usually in the update function.
   */
 struct kNN : public GraphChiProgram<VertexDataType, EdgeDataType> {
-    
  
     /**
      *  Vertex update function.
